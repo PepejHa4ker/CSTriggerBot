@@ -44,6 +44,11 @@ public:
 		return cRead;
 	}
 
+    template<class c>
+    BOOL Write(DWORD dwAddress, c ValueToWrite)
+    {
+        return WriteProcessMemory(HandleProcess, (PBYTE*)dwAddress, &ValueToWrite, sizeof(c), NULL);
+    }
 
 	DWORD getThreadByProcess(DWORD DwordProcess)
 	{
@@ -69,8 +74,9 @@ public:
 	{
 		MODULEENTRY32 lpModuleEntry = { 0 };
 		HANDLE hSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, DwordProcessId);
-		if (!hSnapShot)
-			return NULL;
+		if (!hSnapShot) {
+            return NULL;
+        }
 		lpModuleEntry.dwSize = sizeof(lpModuleEntry);
 		BOOL RunModule = Module32First(hSnapShot, &lpModuleEntry);
 		while (RunModule)
@@ -111,7 +117,7 @@ public:
 		while (!(getThreadByProcess(_gameProcess.th32ProcessID))) Sleep(12);
 		HandleProcess = OpenProcess(PROCESS_ALL_ACCESS, false, _gameProcess.th32ProcessID);
 		while (dwordClient == 0x0) dwordClient = GetModuleNamePointer("client.dll", _gameProcess.th32ProcessID);
-		while (dwordEngine == 0x0) dwordEngine = GetModuleNamePointer("engine.dll", _gameProcess.th32ProcessID)
+		while (dwordEngine == 0x0) dwordEngine = GetModuleNamePointer("engine.dll", _gameProcess.th32ProcessID);
 	}
 };
 
