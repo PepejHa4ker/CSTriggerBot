@@ -36,11 +36,11 @@ public:
 		return 0;
 	}
 
-	template <class cData>
-	cData Read(DWORD addr)
+	template <class c>
+    c Read(DWORD addr)
 	{
-		cData cRead;
-		ReadProcessMemory(HandleProcess, (PBYTE*)addr, &cRead, sizeof(cData), NULL);
+		c cRead;
+		ReadProcessMemory(HandleProcess, (PBYTE*)addr, &cRead, sizeof(c), NULL);
 		return cRead;
 	}
 
@@ -55,9 +55,13 @@ public:
 		THREADENTRY32 ThreadEntry;
 		ThreadEntry.dwSize = sizeof(THREADENTRY32);
 		HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
-		if (hSnapshot == INVALID_HANDLE_VALUE) return 0;
+		if (hSnapshot == INVALID_HANDLE_VALUE) {
+		    return 0;
+		}
 
-		if (!Thread32First(hSnapshot, &ThreadEntry)) { CloseHandle(hSnapshot); return 0; }
+		if (!Thread32First(hSnapshot, &ThreadEntry)) {
+		    CloseHandle(hSnapshot); return 0;
+		}
 
 		do {
 			if (ThreadEntry.th32OwnerProcessID == DwordProcess)
@@ -93,32 +97,31 @@ public:
 	}
 
 
-	void runSetDebugPrivs()
-	{
-		HANDLE HandleProcess = GetCurrentProcess(), HandleToken;
-		TOKEN_PRIVILEGES privileges;
-		LUID LUID;
-		OpenProcessToken(HandleProcess, TOKEN_ADJUST_PRIVILEGES, &HandleToken);
-		LookupPrivilegeValue(nullptr, "seDebugPrivilege", &LUID);
-        privileges.PrivilegeCount = 1;
-        privileges.Privileges[0].Luid = LUID;
-        privileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-		AdjustTokenPrivileges(HandleToken, false, &privileges, 0, 0, 0);
-		CloseHandle(HandleToken);
-		CloseHandle(HandleProcess);
-	}
+//	void runSetDebugPrivs()
+//	{
+//		HANDLE HandleProcess = GetCurrentProcess(), HandleToken;
+//		TOKEN_PRIVILEGES privileges;
+//		LUID LUID;
+//		OpenProcessToken(HandleProcess, TOKEN_ADJUST_PRIVILEGES, &HandleToken);
+//		LookupPrivilegeValue(nullptr, "seDebugPrivilege", &LUID);
+//        privileges.PrivilegeCount = 1;
+//        privileges.Privileges[0].Luid = LUID;
+//        privileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+//		AdjustTokenPrivileges(HandleToken, false, &privileges, 0, 0, 0);
+//		CloseHandle(HandleToken);
+//		CloseHandle(HandleProcess);
+//	}
 
 
 
 	void RunProcess()
 	{
-		runSetDebugPrivs();
 		while (!FindProcessName("csgo.exe", &_gameProcess)) Sleep(12);
 		while (!(getThreadByProcess(_gameProcess.th32ProcessID))) Sleep(12);
 		HandleProcess = OpenProcess(PROCESS_ALL_ACCESS, false, _gameProcess.th32ProcessID);
-		while (dwordClient == 0x0) dwordClient = GetModuleNamePointer("client.dll", _gameProcess.th32ProcessID);
-		while (dwordEngine == 0x0) dwordEngine = GetModuleNamePointer("engine.dll", _gameProcess.th32ProcessID);
-	}
+        while (dwordClient == 0x0) dwordClient = GetModuleNamePointer("client.dll", _gameProcess.th32ProcessID);
+        while (dwordEngine == 0x0) dwordEngine = GetModuleNamePointer("engine.dll", _gameProcess.th32ProcessID);
+    }
 };
 
 
